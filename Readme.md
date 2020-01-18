@@ -28,13 +28,9 @@ The JesFs Bootloader simply copies optionally new data from Files to Flash. A �
 For generating Firmware Files (from one or more HEX Files) a small Tool “JesFsHex2Bin” is included (in C and as EXE for Windows).
 
 _Hint: If 'JesFs_Bootloader/...' is installed in the same Directory as the User's App, add this line to the App's Common Project Options -> 'User Build Step' -> 'Post-Build Command'
-to generate a bootable Firmware Binary: _
-...
+to generate a bootable Firmware Binary in SES: _Hint
 
-../../../../JesFs_Bootloader/JesFsHex2Bin_WIN32/JesFsHex2Bin.exe $(OutDir)/$(ProjectName).hex -h -o_firmware.bin
-
-...
-
+  ../../../../JesFs_Bootloader/JesFsHex2Bin_WIN32/JesFsHex2Bin.exe $(OutDir)/$(ProjectName).hex -h -o_firmware.bin
 
 ![nRF52 Components](https://github.com/joembedded/JesFs_Bootloader/blob/master/Docu/Components.jpg)
 ***
