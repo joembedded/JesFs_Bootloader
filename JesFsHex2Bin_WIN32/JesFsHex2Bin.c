@@ -7,10 +7,10 @@
 * (C) JoEmbedded.de
 *
 * Version:
-* 1.00	/ 11.01.2020
+* 1.01	/ 13.01.2020
 *********************************************************************************/
 
-#define VERSION "1.00 / 11.01.2020"
+#define VERSION "1.01 / 13.01.2020"
 
 #define _CRT_SECURE_NO_WARNINGS // For VisualStudio
 #include <stdio.h>
@@ -251,7 +251,7 @@ int write_header(FILE* outf, int hdrtype, int min_bin_addr, int anz, uint32_t pa
 			printf("ERROR: File Write Error!\n");
 			return -20;
 		}
-		printf("Header Type 0: Vector Table of Binary: 0x%X\n", par1);
+		printf("Header Type 0: Binary Start: 0x%X (%d Bytes)\n", min_bin_addr,anz);
 		printf("Timestamp: 0x%X\n", hdr0.timestamp);
 
 		break;
@@ -275,6 +275,7 @@ int main(int argc, char** argv) {
 	memset(binbuf, BINDEF_VAL, MAX_BUF);
 		
 	if (argc <= 1) {
+		printf("Path: '%s'\n\n", argv[0]); // Help finding EXE
 		printf("Usage: FILE1.HEX [FILE2.HEX ...] [-cLOW_ADDR] [-hHDRTYPE] [-oOUTFILE.BIN]\n\n");
 
 		printf("Combines all .HEX-files in OUTFILE.BIN\n");
