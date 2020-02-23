@@ -1,5 +1,5 @@
 # The JesFs Bootloader for nRF52 #
-## V1.01 ##
+## V1.02 ##
 
 Using a Filesystem for Firmware Updates is the most flexible solution, because it allows many different ways to get Firmware on the target board:
 
@@ -30,6 +30,7 @@ For generating Firmware Files (from one or more HEX Files) a small Tool “JesFs
 > Hint: If 'JesFs_Bootloader/...' is installed in the same Directory as the User's App, add this line to the App's Common Project  Options -> 'User Build Step' -> 'Post-Build Command' to generate a bootable Firmware Binary in SES:*
 >
     ../../../../JesFs_Bootloader/JesFsHex2Bin_WIN32/JesFsHex2Bin.exe $(OutDir)/$(ProjectName).hex -h -o_firmware.bin
+
 
 ![nRF52 Components](https://github.com/joembedded/JesFs_Bootloader/blob/master/Docu/Components.jpg)
 ***

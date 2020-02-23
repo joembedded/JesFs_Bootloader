@@ -12,10 +12,11 @@
 * (C)2019 joembedded@gmail.com - www.joembedded.de
 * Version: 
 * 1.00 / 11.01.2020
+* 1.02 / 22.02.2020 - Fixed error with incomlete Firmwar Files
 * 
 *******************************************************************************/
 
-#define VERSION "1.00 / 11.01.2020"
+#define VERSION "1.02 / 22.02.2020"
 
 #include "boards.h"
 #include "nrf_bootloader.h"
@@ -186,6 +187,7 @@ int16_t check_system(void) {
     if (res == 0) { // File Found
         lres = fs_read(&fs_desc, (uint8_t *)&hdr_buf, sizeof(hdr_buf));
         if (lres != 32 || hdr_buf.hdrmagic != HDR0_MAGIC) {
+            if(cpu_firmware_valid) return -101; // Firmwarefile defect, but old Firmware OK
             return -1;
         }
         if (hdr_buf.timestamp == pbl_memory->timestamp && hdr_buf.crc32 == pbl_memory->crc32 && cpu_firmware_valid) {
@@ -203,12 +205,14 @@ int16_t check_system(void) {
                 block_len = sizeof(sbuffer);
             lres = fs_read(&fs_desc, sbuffer, block_len);
             if (lres != block_len) {
+                if(cpu_firmware_valid) return -102; // Firmwarefile defect, but old Firmware OK
                 return -2; // File Read Error/Len
             }
             total_len -= block_len;
         }
         // Now fs_desc.file_crc32 should contain correct CRC
         if (fs_desc.file_crc32 != hdr_buf.crc32) {
+            if(cpu_firmware_valid) return -103; // Firmwarefile defect, but old Firmware OK
             return -3; // firmeware.bin CRC32 corrupt
         }
         tb_printf("\nFlash: ");
@@ -249,7 +253,9 @@ int16_t check_system(void) {
         return -5; // Verify failed!
     }
     
-    if(!cpu_firmware_valid) return -6;  // No Valid Firmware on CPU and no valid firmware.bin...
+    if(!cpu_firmware_valid) { // Error <= -100
+      return -206;  // No Valid Firmware on CPU and no valid firmware.bin...
+    }
     return 0;
 }
 
@@ -284,7 +290,29 @@ void main(void) {
 
     res = check_system();
     if (res < 0) { // Unexpected Return
-        tb_printf("\nERROR: '_firmware.bin' corrupt (%d)\n", res);
+        // <= - 200: NOTHING valid
+        if(res<=-200) tb_printf("\nERROR: No Firmware found (%d)\n", res);
+        else {
+          // <0 and >-199: Firmware-File corrupt
+          tb_printf("\nERROR: '_firmware.bin' corrupt (%d)\n", res);
+          // <=-100 and >-199: ..But old Firmware present!
+          if(res<=-100){
+            tb_printf("...Firmware not changed!\n");
+#ifndef CMDL_DEBUG
+            i=10;
+            while(i--){
+              tb_printf("Restart old Firmware(%u)\n",i);
+              tb_board_led_invert(0); // 10 sec Hektisch blinken
+              tb_delay_ms(300);
+              tb_board_led_invert(0);
+              tb_delay_ms(300);
+              tb_board_led_invert(0);
+              tb_delay_ms(300);
+            }
+            res=2;
+#endif
+          }
+        }
     }
 
 #ifndef CMDL_DEBUG
