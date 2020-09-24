@@ -9,14 +9,16 @@
 * is disabled, Reset with NVIC_SystemReset() keeps Watchdog running,
 * JesFsBoot always enables the Watchdog with a Timout of >= 250 secs.
 *
-* (C)2019 joembedded@gmail.com - www.joembedded.de
+* (C)2020 joembedded@gmail.com - www.joembedded.de
 * Version: 
 * 1.00 / 11.01.2020
-* 1.02 / 22.02.2020 - Fixed error with incomlete Firmwar Files
-* 
+* 1.02 / 22.02.2020 - Fixed error with incomplete Firmware Files
+* 1.5 / 08.09.2020 - SDK17 and SES 4.52b
+* 1.51 / 14.09.2020 - Cosmetics
+* 1.52 / 24.09.2020 - SDK17.0.2
 *******************************************************************************/
 
-#define VERSION "1.02 / 22.02.2020"
+#define VERSION "1.52 / 24.09.2020"
 
 #include "boards.h"
 #include "nrf_bootloader.h"
@@ -79,6 +81,8 @@ char input[MAX_INPUT + 1]; // 0 at end
 #define SBUF_SIZE CODE_PAGE_SIZE // Buffer to hold >= 1 CPU Flash Page
 uint8_t sbuffer[SBUF_SIZE];      // Test buffer
 
+uint32_t mac_addr_h,mac_addr_l; 
+
 //==== JesFs globals =====
 FS_DESC fs_desc;
 FS_STAT fs_stat;
@@ -120,11 +124,13 @@ uint32_t _time_get(void) {
 }
 
 //=== common helpers ===
+#ifdef CMDL_DEBUG
 // Helper Function for readable timestamps
 void conv_secs_to_date_sbuffer(uint32_t secs) {
     fs_sec1970_to_date(secs, &fs_date);
     sprintf((char *)sbuffer, "%02u.%02u.%04u %02u:%02u:%02u", fs_date.d, fs_date.m, fs_date.a, fs_date.h, fs_date.min, fs_date.sec);
 }
+#endif
 
 // Init system and Toolbox
 void bootloader_init(void) {
@@ -134,9 +140,9 @@ void bootloader_init(void) {
     nrf_bootloader_mbr_addrs_populate();
 
     // Protect MBR and bootloader code from being overwritten.
-    ret_val = nrf_bootloader_flash_protect(0, MBR_SIZE, false);
+    ret_val = nrf_bootloader_flash_protect(0, MBR_SIZE /*, false(only SDK16)*/);
     APP_ERROR_CHECK(ret_val);
-    ret_val = nrf_bootloader_flash_protect(BOOTLOADER_START_ADDR, BOOTLOADER_SIZE, false);
+    ret_val = nrf_bootloader_flash_protect(BOOTLOADER_START_ADDR, BOOTLOADER_SIZE /*, false (only SDK16)*/);
     APP_ERROR_CHECK(ret_val);
 
     ret_val = NRF_LOG_INIT(app_timer_cnt_get);
@@ -162,6 +168,7 @@ int16_t check_system(void) {
 
     // 2.) Check, if APP is present ans Bootloader has stored it:
 #ifdef CMDL_DEBUG
+    tb_printf("Bootloader Start: 0x%X (Codesize %d of max. %d)\n",CODE_START, CODE_SIZE,BOOTLOADER_SIZE);
     tb_printf("BootloaderSettingsPage (%x):\n", BOOTLOADER_SETTINGS_ADDRESS);
     tb_printf("-Magic: %x\n", pbl_memory->hdrmagic);  // == HDR0_MAGIC
     tb_printf("-HdrSize: %x\n", pbl_memory->hdrsize); // File header (==32)
@@ -268,12 +275,18 @@ void main(void) {
     uint32_t adr;
     uint32_t val;
 
+    mac_addr_h = NRF_FICR->DEVICEADDR[1]; // Regs. locked by SD
+    mac_addr_l = NRF_FICR->DEVICEADDR[0];
+ 
     bootloader_init();
 
     NRF_LOG_INFO("JesFsBoot started\n");
     NRF_LOG_FLUSH();
 
-    tb_printf("\n*** JesFsBoot " VERSION " (C)2020 JoEmbedded.de\n\n");
+    tb_printf("\n*** JesFsBoot (No Encryption) " VERSION " (C)2020 JoEmbedded.de\n\n");
+    
+    tb_printf("MAC:%08X%08X\n", mac_addr_h, mac_addr_l);
+
 #ifdef CMDL_DEBUG
     tb_printf("*DEBUG*\n");
 #endif
@@ -299,15 +312,15 @@ void main(void) {
           if(res<=-100){
             tb_printf("...Firmware not changed!\n");
 #ifndef CMDL_DEBUG
-            i=10;
+            i=5;    // Blink 5 times if update failed
             while(i--){
               tb_printf("Restart old Firmware(%u)\n",i);
               tb_board_led_invert(0); // 10 sec Hektisch blinken
-              tb_delay_ms(300);
+              tb_delay_ms(100);
               tb_board_led_invert(0);
-              tb_delay_ms(300);
+              tb_delay_ms(100);
               tb_board_led_invert(0);
-              tb_delay_ms(300);
+              tb_delay_ms(800);
             }
             res=2;
 #endif
@@ -328,6 +341,7 @@ void main(void) {
     }else{  // Everything is OK: Start USER
          fs_deepsleep();
          tb_printf("Start Firmware...\n");
+         tb_delay_ms(5); // OK for 50 Bytes
          tb_uninit();
          nrf_bootloader_app_start();
          // Never come back 

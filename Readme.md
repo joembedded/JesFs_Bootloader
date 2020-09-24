@@ -1,5 +1,5 @@
 # The JesFs Bootloader for nRF52 #
-## V1.02 ##
+## V1.52 ##
 
 Using a Filesystem for Firmware Updates is the most flexible solution, because it allows many different ways to get Firmware on the target board:
 
@@ -16,6 +16,9 @@ I wrote the JesFs Bootloader for my daily work. Feel free to use it too (*Licens
 For my application I am using BLE (Webbluetooth API) and Mobile Internet.
 
 The nRF52840-DK (‘pca10056’) already has on on-board 8 MByte Serial Flash Memory (Ultra Low Power, < 0.5 µA in Deepsleep), thus making it a very convenient development platform! 
+
+## The Secure Version ##
+For production I use an advanced Version with fast AES-128 Encryption. I you are interested, drop me a note.
 
 ## The nRF52 Boot process (with JesFs) ##
 
