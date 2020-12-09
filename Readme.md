@@ -1,5 +1,5 @@
 # The JesFs Bootloader for nRF52 #
-## V1.52 ##
+## V1.55 ##
 
 Using a Filesystem for Firmware Updates is the most flexible solution, because it allows many different ways to get Firmware on the target board:
 
@@ -10,7 +10,10 @@ Using a Filesystem for Firmware Updates is the most flexible solution, because i
 - JTAG
 - Mobile Internet
 - …
-![BLE Terminal for File Transfer](https://github.com/joembedded/JesFs_Bootloader/blob/master/Docu/BLE_Term.jpg)
+
+The LTX_BLE-Terminal uses the Bootloader (Project: https://github.com/joembedded/ltx_ble_demo):
+![The LTX_BLE-Terminal uses the Bootloader](https://github.com/joembedded/ltx_ble_demo/blob/master/docs/ble_all.jpg)
+
 
 I wrote the JesFs Bootloader for my daily work. Feel free to use it too (*License: LGPL v3*).
 For my application I am using BLE (Webbluetooth API) and Mobile Internet.
