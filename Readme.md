@@ -1,5 +1,7 @@
 # The JesFs Bootloader for nRF52 #
-## V1.55 ##
+## V2.xx ##
+
+_New release V2.xx soon (New Features: available for more CPUs (nRF52832,nRF52833,nRF52840), no need for JesFs for smaller Firmware Updates, easy-2-use Javascript/HTML libraries, ...)__
 
 Using a Filesystem for Firmware Updates is the most flexible solution, because it allows many different ways to get Firmware on the target board:
 
